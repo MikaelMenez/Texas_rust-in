@@ -1,11 +1,13 @@
 pub mod cards {
+
+    use rand::seq::SliceRandom;
     use std::cmp::Ordering;
     use std::collections::HashMap;
     use std::fmt::{Display, Formatter, Result};
+
     #[derive(Debug)]
-    pub enum CardError {
-        WrongRank,
-        WrongSuit,
+    pub enum DeckError {
+        InsufficientCards,
     }
     #[derive(Debug)]
     pub enum Suits {
@@ -30,17 +32,76 @@ pub mod cards {
         King,
         Ace,
     }
+    #[derive(Debug)]
+    pub enum Blinder {
+        BigBlind,
+        Dealer,
+        SmallBlind,
+        Common,
+    }
+    #[derive(Debug)]
+    pub struct Player {
+        pub hand: Vec<Card>,
+        pub blind: Blinder,
+    }
     #[derive(Debug, PartialEq, Eq)]
     pub struct Card {
         pub rank: char,
         pub suit: char,
     }
-
-    impl Display for CardError {
+    #[derive(Debug)]
+    pub struct Deck(pub Vec<Card>);
+    impl Display for Deck {
+        fn fmt(&self, f: &mut Formatter) -> Result {
+            let visual = self
+                .0
+                .iter()
+                .map(|c: &Card| c.to_string())
+                .collect::<Vec<_>>()
+                .join(", ");
+            write!(f, " {visual}")
+        }
+    }
+    impl Display for Player {
+        fn fmt(&self, f: &mut Formatter) -> Result {
+            match self.hand.len() {
+                0 => write!(f, " blind:{:?}, hand:empty", self.blind),
+                1 => write!(
+                    f,
+                    " blind:{:?}, hand:{}",
+                    self.blind,
+                    self.hand.get(0).unwrap()
+                ),
+                2 => write!(
+                    f,
+                    " blind:{:?}, hand:{} {}",
+                    self.blind,
+                    self.hand.get(0).unwrap(),
+                    self.hand.get(1).unwrap()
+                ),
+                _ => write!(f, " too much cards on hand",),
+            }
+        }
+    }
+    impl Player {
+        pub fn new(blind: Blinder) -> Player {
+            Player {
+                hand: vec![],
+                blind,
+            }
+        }
+        pub fn get_hand(&mut self, deck: &mut Deck) -> std::result::Result<(), DeckError> {
+            let card1 = deck.0.pop().ok_or(DeckError::InsufficientCards)?;
+            let card2 = deck.0.pop().ok_or(DeckError::InsufficientCards)?;
+            self.hand.push(card1);
+            self.hand.push(card2);
+            Ok(())
+        }
+    }
+    impl Display for DeckError {
         fn fmt(&self, f: &mut Formatter) -> Result {
             match self {
-                Self::WrongRank => write!(f, "{}", "Wrong value for rank"),
-                Self::WrongSuit => write!(f, "{}", "Wrong value for suit"),
+                Self::InsufficientCards => write!(f, "{}", "Insufficient cards on the deck"),
             }
         }
     }
@@ -149,216 +210,221 @@ pub mod cards {
                 suit: suit.symbol(),
             }
         }
+        pub fn suffle(cards: &mut Deck) {
+            let mut rng = rand::rng();
+            cards.0.shuffle(&mut rng);
+        }
+        pub fn deck() -> Deck {
+            return Deck(vec![
+                Card {
+                    rank: '2',
+                    suit: '♧',
+                },
+                Card {
+                    rank: '3',
+                    suit: '♧',
+                },
+                Card {
+                    rank: '4',
+                    suit: '♧',
+                },
+                Card {
+                    rank: '5',
+                    suit: '♧',
+                },
+                Card {
+                    rank: '6',
+                    suit: '♧',
+                },
+                Card {
+                    rank: '7',
+                    suit: '♧',
+                },
+                Card {
+                    rank: '8',
+                    suit: '♧',
+                },
+                Card {
+                    rank: '9',
+                    suit: '♧',
+                },
+                Card {
+                    rank: '0',
+                    suit: '♧',
+                },
+                Card {
+                    rank: 'j',
+                    suit: '♧',
+                },
+                Card {
+                    rank: 'q',
+                    suit: '♧',
+                },
+                Card {
+                    rank: 'k',
+                    suit: '♧',
+                },
+                Card {
+                    rank: 'a',
+                    suit: '♧',
+                },
+                Card {
+                    rank: '2',
+                    suit: '♤',
+                },
+                Card {
+                    rank: '3',
+                    suit: '♤',
+                },
+                Card {
+                    rank: '4',
+                    suit: '♤',
+                },
+                Card {
+                    rank: '5',
+                    suit: '♤',
+                },
+                Card {
+                    rank: '6',
+                    suit: '♤',
+                },
+                Card {
+                    rank: '7',
+                    suit: '♤',
+                },
+                Card {
+                    rank: '8',
+                    suit: '♤',
+                },
+                Card {
+                    rank: '9',
+                    suit: '♤',
+                },
+                Card {
+                    rank: '0',
+                    suit: '♤',
+                },
+                Card {
+                    rank: 'j',
+                    suit: '♤',
+                },
+                Card {
+                    rank: 'q',
+                    suit: '♤',
+                },
+                Card {
+                    rank: 'k',
+                    suit: '♤',
+                },
+                Card {
+                    rank: 'a',
+                    suit: '♤',
+                },
+                Card {
+                    rank: '2',
+                    suit: '♥',
+                },
+                Card {
+                    rank: '3',
+                    suit: '♥',
+                },
+                Card {
+                    rank: '4',
+                    suit: '♥',
+                },
+                Card {
+                    rank: '5',
+                    suit: '♥',
+                },
+                Card {
+                    rank: '6',
+                    suit: '♥',
+                },
+                Card {
+                    rank: '7',
+                    suit: '♥',
+                },
+                Card {
+                    rank: '8',
+                    suit: '♥',
+                },
+                Card {
+                    rank: '9',
+                    suit: '♥',
+                },
+                Card {
+                    rank: '0',
+                    suit: '♥',
+                },
+                Card {
+                    rank: 'j',
+                    suit: '♥',
+                },
+                Card {
+                    rank: 'q',
+                    suit: '♥',
+                },
+                Card {
+                    rank: 'k',
+                    suit: '♥',
+                },
+                Card {
+                    rank: 'a',
+                    suit: '♥',
+                },
+                Card {
+                    rank: '2',
+                    suit: '♦',
+                },
+                Card {
+                    rank: '3',
+                    suit: '♦',
+                },
+                Card {
+                    rank: '4',
+                    suit: '♦',
+                },
+                Card {
+                    rank: '5',
+                    suit: '♦',
+                },
+                Card {
+                    rank: '6',
+                    suit: '♦',
+                },
+                Card {
+                    rank: '7',
+                    suit: '♦',
+                },
+                Card {
+                    rank: '8',
+                    suit: '♦',
+                },
+                Card {
+                    rank: '9',
+                    suit: '♦',
+                },
+                Card {
+                    rank: '0',
+                    suit: '♦',
+                },
+                Card {
+                    rank: 'j',
+                    suit: '♦',
+                },
+                Card {
+                    rank: 'q',
+                    suit: '♦',
+                },
+                Card {
+                    rank: 'k',
+                    suit: '♦',
+                },
+                Card {
+                    rank: 'a',
+                    suit: '♦',
+                },
+            ]);
+        }
     }
-
-    pub static DECK: &[Card] = &[
-        Card {
-            rank: '2',
-            suit: '♧',
-        },
-        Card {
-            rank: '3',
-            suit: '♧',
-        },
-        Card {
-            rank: '4',
-            suit: '♧',
-        },
-        Card {
-            rank: '5',
-            suit: '♧',
-        },
-        Card {
-            rank: '6',
-            suit: '♧',
-        },
-        Card {
-            rank: '7',
-            suit: '♧',
-        },
-        Card {
-            rank: '8',
-            suit: '♧',
-        },
-        Card {
-            rank: '9',
-            suit: '♧',
-        },
-        Card {
-            rank: '0',
-            suit: '♧',
-        },
-        Card {
-            rank: 'j',
-            suit: '♧',
-        },
-        Card {
-            rank: 'q',
-            suit: '♧',
-        },
-        Card {
-            rank: 'k',
-            suit: '♧',
-        },
-        Card {
-            rank: 'a',
-            suit: '♧',
-        },
-        Card {
-            rank: '2',
-            suit: '♤',
-        },
-        Card {
-            rank: '3',
-            suit: '♤',
-        },
-        Card {
-            rank: '4',
-            suit: '♤',
-        },
-        Card {
-            rank: '5',
-            suit: '♤',
-        },
-        Card {
-            rank: '6',
-            suit: '♤',
-        },
-        Card {
-            rank: '7',
-            suit: '♤',
-        },
-        Card {
-            rank: '8',
-            suit: '♤',
-        },
-        Card {
-            rank: '9',
-            suit: '♤',
-        },
-        Card {
-            rank: '0',
-            suit: '♤',
-        },
-        Card {
-            rank: 'j',
-            suit: '♤',
-        },
-        Card {
-            rank: 'q',
-            suit: '♤',
-        },
-        Card {
-            rank: 'k',
-            suit: '♤',
-        },
-        Card {
-            rank: 'a',
-            suit: '♤',
-        },
-        Card {
-            rank: '2',
-            suit: '♥',
-        },
-        Card {
-            rank: '3',
-            suit: '♥',
-        },
-        Card {
-            rank: '4',
-            suit: '♥',
-        },
-        Card {
-            rank: '5',
-            suit: '♥',
-        },
-        Card {
-            rank: '6',
-            suit: '♥',
-        },
-        Card {
-            rank: '7',
-            suit: '♥',
-        },
-        Card {
-            rank: '8',
-            suit: '♥',
-        },
-        Card {
-            rank: '9',
-            suit: '♥',
-        },
-        Card {
-            rank: '0',
-            suit: '♥',
-        },
-        Card {
-            rank: 'j',
-            suit: '♥',
-        },
-        Card {
-            rank: 'q',
-            suit: '♥',
-        },
-        Card {
-            rank: 'k',
-            suit: '♥',
-        },
-        Card {
-            rank: 'a',
-            suit: '♥',
-        },
-        Card {
-            rank: '2',
-            suit: '♦',
-        },
-        Card {
-            rank: '3',
-            suit: '♦',
-        },
-        Card {
-            rank: '4',
-            suit: '♦',
-        },
-        Card {
-            rank: '5',
-            suit: '♦',
-        },
-        Card {
-            rank: '6',
-            suit: '♦',
-        },
-        Card {
-            rank: '7',
-            suit: '♦',
-        },
-        Card {
-            rank: '8',
-            suit: '♦',
-        },
-        Card {
-            rank: '9',
-            suit: '♦',
-        },
-        Card {
-            rank: '0',
-            suit: '♦',
-        },
-        Card {
-            rank: 'j',
-            suit: '♦',
-        },
-        Card {
-            rank: 'q',
-            suit: '♦',
-        },
-        Card {
-            rank: 'k',
-            suit: '♦',
-        },
-        Card {
-            rank: 'a',
-            suit: '♦',
-        },
-    ];
 }
